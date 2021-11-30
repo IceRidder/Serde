@@ -46,6 +46,8 @@ abstract class Serde
 
         $classDef = $this->analyzer->analyze($object, ClassDef::class);
 
+        $rootField = Field::createRoot($this->analyzer, 'root', $object::class);
+
         $init = $formatter->serializeInitialize($classDef);
 
         $inner = new Serializer(
@@ -55,7 +57,7 @@ abstract class Serde
             formatter: $formatter,
         );
 
-        $serializedValue = $inner->serialize($object, $init, $formatter->initialField($object::class));
+        $serializedValue = $inner->serialize($object, $init, $rootField);
 
         return $formatter->serializeFinalize($serializedValue, $classDef);
     }

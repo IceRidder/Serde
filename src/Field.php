@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Crell\Serde;
 
 use Attribute;
+use Crell\AttributeUtils\ClassAnalyzer;
 use Crell\AttributeUtils\Excludable;
 use Crell\AttributeUtils\FromReflectionProperty;
 use Crell\AttributeUtils\HasSubAttributes;
@@ -77,6 +78,11 @@ class Field implements FromReflectionProperty, HasSubAttributes, Excludable
      * @internal
      */
     public readonly array $extraProperties;
+
+    /**
+     * Assigned at runtime.
+     */
+    protected readonly ClassAnalyzer $analyzer;
 
     public const TYPE_NOT_SPECIFIED = '__NO_TYPE__';
 
@@ -187,6 +193,47 @@ class Field implements FromReflectionProperty, HasSubAttributes, Excludable
         // This may assign to null, which is OK as that will
         // evaluate to false when we need it to.
         $this->typeField = $typeField;
+    }
+
+    public static function createRoot(
+        ClassAnalyzer $analyzer,
+        string $serializedName = null,
+        string $phpType = null,
+    ): static
+    {
+        $new = new static();
+        $new->serializedName = $serializedName;
+        $new->phpName ??= $serializedName;
+        $new->phpType = $phpType;
+        $new->typeField = null;
+
+        $new->analyzer = $analyzer;
+
+        $new->typeMap = $analyzer->analyze($phpType, ClassDef::class)?->typeMap;
+
+        $new->finalize();
+        return $new;
+    }
+
+
+    public function forType(string $serializedName, string $phpType): static
+    {
+        return $this->with(
+            serializedName: $serializedName,
+            phpType: $phpType,
+        );
+    }
+
+    public function typeMap(): ?TypeMap
+    {
+        if ($this->typeCategory !== TypeCategory::Object) {
+            // @todo Better exception
+            throw new \RuntimeException('Cannot get properties on non-object');
+        }
+
+        // @todo Injected type maps go here.
+
+        return $this?->typeMap;
     }
 
     /**
