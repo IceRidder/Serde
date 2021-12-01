@@ -38,6 +38,9 @@ abstract class Serde
     /** @var Deformatter[] */
     protected readonly array $deformatters;
 
+    /** @var TypeMap[] */
+    protected readonly array $typeMaps;
+
     protected readonly ClassAnalyzer $analyzer;
 
     public function serialize(object $object, string $format): mixed
@@ -46,7 +49,7 @@ abstract class Serde
 
         $classDef = $this->analyzer->analyze($object, ClassDef::class);
 
-        $rootField = Field::createRoot($this->analyzer, 'root', $object::class);
+        $rootField = Field::createRoot($this->analyzer, $this->typeMaps, 'root', $object::class);
 
         $init = $formatter->serializeInitialize($classDef);
 
@@ -68,7 +71,7 @@ abstract class Serde
 
         $decoded = $formatter->deserializeInitialize($serialized);
 
-        $rootField = Field::createRoot($this->analyzer, 'root', $to);
+        $rootField = Field::createRoot($this->analyzer, $this->typeMaps,'root', $to);
 
         $inner = new Deserializer(
             analyzer: $this->analyzer,

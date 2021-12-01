@@ -49,6 +49,9 @@ class SerdeCommon extends Serde
     /** @var Deformatter[] */
     protected readonly array $deformatters;
 
+    /** @var TypeMap[] */
+    protected readonly array $typeMaps;
+
     /**
      * @param ClassAnalyzer $analyzer
      * @param array<int, PropertyReader|PropertyWriter> $handlers
@@ -58,6 +61,7 @@ class SerdeCommon extends Serde
         protected readonly ClassAnalyzer $analyzer = new MemoryCacheAnalyzer(new Analyzer()),
         array $handlers = [],
         array $formatters = [],
+        array $typeMaps = [],
     ) {
         // Slot any custom handlers in before the generic object reader.
         $handlers = [
@@ -93,5 +97,7 @@ class SerdeCommon extends Serde
             afilter(static fn ($formatter): bool => $formatter instanceof Deformatter),
             indexBy(static fn (Deformatter $formatter): string => $formatter->format()),
         );
+
+        $this->typeMaps = $typeMaps;
     }
 }

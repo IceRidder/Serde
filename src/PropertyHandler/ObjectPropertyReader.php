@@ -50,7 +50,7 @@ class ObjectPropertyReader implements PropertyWriter, PropertyReader
             reduce(new Dict(), fn(Dict $dict, Field $f) => $this->flattenValue($dict, $f, $propReader)),
         );
 
-        if ($map = $this->typeMap($field)) {
+        if ($map = $field->typeMap()) {
             $f = $field->forType(serializedName: $map->keyField(), phpType: 'string');
             // The type map field MUST come first so that streaming deformatters
             // can know their context.
@@ -84,7 +84,7 @@ class ObjectPropertyReader implements PropertyWriter, PropertyReader
             $c = fn (Dict $dict, Field $prop) => $this->reduceObjectProperty($dict, $prop, $subPropReader);
             $properties = $field->propertiesForValue($value);
             $dict = reduce($dict, $c)($properties);
-            if ($map = $this->typeMap($field)) {
+            if ($map = $field->typeMap()) {
                 $f = $field->forType(serializedName: $map->keyField(), phpType: 'string');
                 // The type map field MUST come first so that streaming deformatters
                 // can know their context.
@@ -139,7 +139,7 @@ class ObjectPropertyReader implements PropertyWriter, PropertyReader
     public function writeValue(Deformatter $formatter, callable $recursor, Field $field, mixed $source): mixed
     {
         // Get the raw data as an array from the source.
-        $dict = $formatter->deserializeObject($source, $field, $recursor, $this->typeMap($field));
+        $dict = $formatter->deserializeObject($source, $field, $recursor, $field->typeMap());
 
         if ($dict === SerdeError::Missing) {
             return null;
@@ -147,7 +147,7 @@ class ObjectPropertyReader implements PropertyWriter, PropertyReader
 
         $class = $this->getTargetClass($field, $dict);
 
-        [$object, $remaining] = $this->populateObject($dict, $class, $formatter, $this->typeMap($field));
+        [$object, $remaining] = $this->populateObject($dict, $class, $formatter, $field->typeMap());
         return $object;
     }
 
@@ -205,7 +205,7 @@ class ObjectPropertyReader implements PropertyWriter, PropertyReader
             if ($targetClass = $this->getTargetClass($collectingField, $dict)) {
                 [$object, $remaining] = $this->populateObject($remaining, $targetClass, $formatter, $collectingField->typeMap);
                 $props[$collectingField->phpName] = $object;
-                if ($map = $this->typeMap($collectingField)) {
+                if ($map = $collectingField->typeMap()) {
                     $usedNames[] = $map->keyField();
                 }
             } elseif ($collectingField->shouldUseDefault) {
@@ -257,7 +257,7 @@ class ObjectPropertyReader implements PropertyWriter, PropertyReader
 
     protected function getTargetClass(Field $field, array $dict): ?string
     {
-        if (!$map = $this->typeMap($field)) {
+        if (!$map = $field->typeMap()) {
             return $field->phpType;
         }
 

@@ -277,15 +277,12 @@ abstract class SerdeTest extends TestCase
      */
     public function custom_object_reader(): void
     {
-        $customHandler = new MappedObjectPropertyReader(
-            supportedTypes: [Task::class],
-            typeMap: new StaticTypeMap(key: 'size', map: [
-                'big' => BigTask::class,
-                'small' => SmallTask::class,
-            ]),
-        );
+        $typeMap = new StaticTypeMap(key: 'size', map: [
+            'big' => BigTask::class,
+            'small' => SmallTask::class,
+        ]);
 
-        $s = new SerdeCommon(handlers: [$customHandler], formatters: $this->formatters);
+        $s = new SerdeCommon(formatters: $this->formatters, typeMaps: [Task::class => $typeMap]);
 
         $data = new TaskContainer(
             task: new BigTask('huge'),
@@ -310,34 +307,31 @@ abstract class SerdeTest extends TestCase
      */
     public function dynamic_type_map(): void
     {
-        $customHandler = new MappedObjectPropertyReader(
-            supportedTypes: [Task::class],
-            typeMap: new class implements TypeMap {
-                public function keyField(): string
-                {
-                    return 'size';
-                }
+        $typeMap = new class implements TypeMap {
+            public function keyField(): string
+            {
+                return 'size';
+            }
 
-                public function findClass(string $id): ?string
-                {
-                    // Or do a DB lookup or whatever.
-                    return match ($id) {
-                        'small' => SmallTask::class,
-                        'big' => BigTask::class,
-                    };
-                }
+            public function findClass(string $id): ?string
+            {
+                // Or do a DB lookup or whatever.
+                return match ($id) {
+                    'small' => SmallTask::class,
+                    'big' => BigTask::class,
+                };
+            }
 
-                public function findIdentifier(string $class): ?string
-                {
-                    return match ($class) {
-                        SmallTask::class => 'small',
-                        BigTask::class => 'big',
-                    };
-                }
-            },
-        );
+            public function findIdentifier(string $class): ?string
+            {
+                return match ($class) {
+                    SmallTask::class => 'small',
+                    BigTask::class => 'big',
+                };
+            }
+        };
 
-        $s = new SerdeCommon(handlers: [$customHandler], formatters: $this->formatters);
+        $s = new SerdeCommon(formatters: $this->formatters, typeMaps: [Task::class => $typeMap]);
 
         $data = new TaskContainer(
             task: new BigTask('huge'),
@@ -385,12 +379,10 @@ abstract class SerdeTest extends TestCase
      */
     public function classname_typemap(): void
     {
-        $customHandler = new MappedObjectPropertyReader(
-            supportedTypes: [Shape::class],
-            typeMap: new ClassNameTypeMap(key: 'class'),
+        $s = new SerdeCommon(
+            formatters: $this->formatters,
+            typeMaps: [Shape::class => new ClassNameTypeMap(key: 'class')],
         );
-
-        $s = new SerdeCommon(handlers: [$customHandler], formatters: $this->formatters);
 
         $data = new Box(new Circle(new TwoDPoint(1, 2), 3));
 
@@ -578,38 +570,37 @@ abstract class SerdeTest extends TestCase
      */
     public function drupal_example(): void
     {
-        $customHandler = new MappedObjectPropertyReader(
-            supportedTypes: [Records\Drupal\Field::class],
-            typeMap: new class implements TypeMap {
-                public function keyField(): string
-                {
-                    return 'type';
-                }
+        $typeMap = new class implements TypeMap {
+            public function keyField(): string
+            {
+                return 'type';
+            }
 
-                public function findClass(string $id): ?string
-                {
-                    // Or do a DB lookup or whatever.
-                    return match ($id) {
-                        'string' => StringItem::class,
-                        'email' => EmailItem::class,
-                        'LinkItem' => LinkItem::class,
-                        'text' => TextItem::class,
-                    };
-                }
+            public function findClass(string $id): ?string
+            {
+                // Or do a DB lookup or whatever.
+                return match ($id) {
+                    'string' => StringItem::class,
+                    'email' => EmailItem::class,
+                    'LinkItem' => LinkItem::class,
+                    'text' => TextItem::class,
+                };
+            }
 
-                public function findIdentifier(string $class): ?string
-                {
-                    return match ($class) {
-                        StringItem::class => 'string',
-                        EmailItem::class => 'email',
-                        LinkItem::class => 'LinkItem',
-                        TextItem::class => 'text',
-                    };
-                }
-            },
-        );
+            public function findIdentifier(string $class): ?string
+            {
+                return match ($class) {
+                    StringItem::class => 'string',
+                    EmailItem::class => 'email',
+                    LinkItem::class => 'LinkItem',
+                    TextItem::class => 'text',
+                };
+            }
+        };
 
-        $s = new SerdeCommon(handlers: [$customHandler], formatters: $this->formatters);
+        $s = new SerdeCommon(formatters: $this->formatters, typeMaps: [
+            Records\Drupal\Field::class => $typeMap,
+        ]);
 
         $data = new Node('A node', 3, false, false);
         $data->fields[] = new FieldItemList('en', [

@@ -84,6 +84,11 @@ class Field implements FromReflectionProperty, HasSubAttributes, Excludable
      */
     protected readonly ClassAnalyzer $analyzer;
 
+    /**
+     * Assigned at runtime.
+     */
+    protected readonly array $typeMaps;
+
     public const TYPE_NOT_SPECIFIED = '__NO_TYPE__';
 
     public function __construct(
@@ -197,6 +202,7 @@ class Field implements FromReflectionProperty, HasSubAttributes, Excludable
 
     public static function createRoot(
         ClassAnalyzer $analyzer,
+        array $typeMaps = [],
         string $serializedName = null,
         string $phpType = null,
     ): static
@@ -208,6 +214,7 @@ class Field implements FromReflectionProperty, HasSubAttributes, Excludable
         $new->typeField = null;
 
         $new->analyzer = $analyzer;
+        $new->typeMaps = $typeMaps;
 
         $new->typeMap = $analyzer->analyze($phpType, ClassDef::class)?->typeMap;
 
@@ -226,6 +233,7 @@ class Field implements FromReflectionProperty, HasSubAttributes, Excludable
 
 
         $new->analyzer = $this->analyzer;
+        $new->typeMaps = $this->typeMaps;
 
         $new->finalize();
 
@@ -265,6 +273,7 @@ class Field implements FromReflectionProperty, HasSubAttributes, Excludable
             // @todo This could be fatal, because who else might be using
             // these cached attributes?  Ah crap.
             $p->analyzer ??= $this->analyzer;
+            $p->typeMaps ??= $this->typeMaps;
         }
         return $props;
     }
@@ -295,6 +304,7 @@ class Field implements FromReflectionProperty, HasSubAttributes, Excludable
             // @todo This could be fatal, because who else might be using
             // these cached attributes?  Ah crap.
             $p->analyzer ??= $this->analyzer;
+            $p->typeMaps ??= $this->typeMaps;
         }
         return $props;
     }
@@ -335,7 +345,11 @@ class Field implements FromReflectionProperty, HasSubAttributes, Excludable
 
     public function typeMap(): ?TypeMap
     {
-        // @todo Injected type maps go here.
+        foreach ($this->typeMaps as $class => $map) {
+            if (is_a($this->phpType, $class, true)) {
+                return $map;
+            }
+        }
 
         return $this?->typeMap;
     }
