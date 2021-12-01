@@ -46,12 +46,12 @@ class ObjectPropertyReader implements PropertyWriter, PropertyReader
 
         /** @var \Crell\Serde\Dict $dict */
         $dict = pipe(
-            $this->analyzer->analyze($value, ClassDef::class)->properties,
+            $field->propertiesForValue($value),
             reduce(new Dict(), fn(Dict $dict, Field $f) => $this->flattenValue($dict, $f, $propReader)),
         );
 
         if ($map = $this->typeMap($field)) {
-            $f = Field::create(serializedName: $map->keyField(), phpType: 'string');
+            $f = $field->forType(serializedName: $map->keyField(), phpType: 'string');
             // The type map field MUST come first so that streaming deformatters
             // can know their context.
             $dict->items = [new CollectionItem(field: $f, value: $map->findIdentifier($value::class)), ...$dict->items];
@@ -74,7 +74,7 @@ class ObjectPropertyReader implements PropertyWriter, PropertyReader
 
         if ($field->typeCategory === TypeCategory::Array) {
             // This really wants to be explicit partial application. :-(
-            $c = fn (Dict $dict, $val, $key) => $this->reduceArrayElement($dict, $val, $key, $this->typeMap($field));
+            $c = fn (Dict $dict, $val, $key) => $this->reduceArrayElement($dict, $val, $key, $field);
             return reduceWithKeys($dict, $c)($value);
         }
 
@@ -82,10 +82,10 @@ class ObjectPropertyReader implements PropertyWriter, PropertyReader
             $subPropReader = (fn (string $prop): mixed => $this->$prop ?? null)->bindTo($value, $value);
             // This really wants to be explicit partial application. :-(
             $c = fn (Dict $dict, Field $prop) => $this->reduceObjectProperty($dict, $prop, $subPropReader);
-            $properties = $this->analyzer->analyze($value::class, ClassDef::class)->properties;
+            $properties = $field->propertiesForValue($value);
             $dict = reduce($dict, $c)($properties);
             if ($map = $this->typeMap($field)) {
-                $f = Field::create(serializedName: $map->keyField(), phpType: 'string');
+                $f = $field->forType(serializedName: $map->keyField(), phpType: 'string');
                 // The type map field MUST come first so that streaming deformatters
                 // can know their context.
                 $dict->items = [new CollectionItem(field: $f, value: $map->findIdentifier($value::class)), ...$dict->items];
@@ -97,13 +97,13 @@ class ObjectPropertyReader implements PropertyWriter, PropertyReader
         throw new \RuntimeException('Invalid flattening field type');
     }
 
-    protected function reduceArrayElement(Dict $dict, $val, $key, ?TypeMap $map): Dict
+    protected function reduceArrayElement(Dict $dict, $val, $key, Field $field): Dict
     {
         $extra = [];
-        if ($map) {
-            $extra[$map->keyField()] = $map->findIdentifier($val::class);
+        if ($field->typeMap) {
+            $extra[$field->typeMap->keyField()] = $field->typeMap->findIdentifier($val::class);
         }
-        $f = Field::create(serializedName: "$key", phpType: \get_debug_type($val), extraProperties: $extra);
+        $f = $field->forType(serializedName: "$key", phpType: \get_debug_type($val), extraProperties: $extra);
         $dict->items[] = new CollectionItem(field: $f, value: $val);
         return $dict;
     }

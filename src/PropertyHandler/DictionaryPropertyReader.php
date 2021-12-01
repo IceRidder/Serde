@@ -25,7 +25,7 @@ class DictionaryPropertyReader implements PropertyReader, PropertyWriter
 
         $dict = new Dict();
         foreach ($value as $k => $v) {
-            $f = Field::create(serializedName: $k, phpType: \get_debug_type($v));
+            $f = $field->forType(serializedName: $k, phpType: \get_debug_type($v));
             $dict->items[] = new CollectionItem(field: $f, value: $v);
         }
 

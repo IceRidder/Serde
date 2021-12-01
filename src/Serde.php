@@ -68,6 +68,8 @@ abstract class Serde
 
         $decoded = $formatter->deserializeInitialize($serialized);
 
+        $rootField = Field::createRoot($this->analyzer, 'root', $to);
+
         $inner = new Deserializer(
             analyzer: $this->analyzer,
             readers: $this->readers,
@@ -75,7 +77,7 @@ abstract class Serde
             formatter: $formatter,
         );
 
-        $new = $inner->deserialize($decoded, $formatter->initialField($to));
+        $new = $inner->deserialize($decoded, $rootField);
 
         $formatter->deserializeFinalize($decoded);
 

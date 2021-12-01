@@ -215,22 +215,126 @@ class Field implements FromReflectionProperty, HasSubAttributes, Excludable
         return $new;
     }
 
-
-    public function forType(string $serializedName, string $phpType): static
+    public function forType(string $serializedName, string $phpType, array $extraProperties = []): static
     {
-        return $this->with(
-            serializedName: $serializedName,
-            phpType: $phpType,
-        );
+        $new = new static();
+        $new->serializedName = $serializedName;
+        $new->phpName ??= $serializedName;
+        $new->phpType = $phpType;
+        $new->typeField = null;
+        $new->extraProperties = $extraProperties;
+
+
+        $new->analyzer = $this->analyzer;
+
+        $new->finalize();
+
+        if ($new->typeCategory === TypeCategory::Object) {
+            $new->typeMap = $this->analyzer->analyze($phpType, ClassDef::class)?->typeMap;
+        }
+
+        return $new;
     }
 
-    public function typeMap(): ?TypeMap
+    public function forArrayType(string $serializedName, array $dict): static
+    {
+        if ($this->typeCategory !== TypeCategory::Array) {
+            // @todo Better exception
+            throw new \RuntimeException('Only works on array fields.');
+        }
+
+        $class = $this->typeMap->findClass($dict[$this->typeMap->keyField()]);
+
+        return $this->forType($serializedName, $class);
+    }
+
+    public function propertiesForValue(object $value): iterable
     {
         if ($this->typeCategory !== TypeCategory::Object) {
             // @todo Better exception
             throw new \RuntimeException('Cannot get properties on non-object');
         }
 
+        $class = $value::class;
+
+        $props = $this->analyzer->analyze($class, ClassDef::class)->properties;
+        foreach ($props as $p) {
+            // Because objects are passed by handle, it is possible that
+            // this isn't the first time we've retrieved these fields.
+            // That means the enhancements may already have been done.
+            // @todo This could be fatal, because who else might be using
+            // these cached attributes?  Ah crap.
+            $p->analyzer ??= $this->analyzer;
+        }
+        return $props;
+    }
+
+    /**
+     * @return Field[]
+     */
+    public function properties(?array $dict = null): iterable
+    {
+        if ($this->typeCategory !== TypeCategory::Object) {
+            // @todo Better exception
+            throw new \RuntimeException('Cannot get properties on non-object');
+        }
+
+        $class = $dict
+            ? $this->getTargetClass($dict)
+            : $this->phpType;
+
+        if (!$class) {
+            return [];
+        }
+
+        $props = $this->analyzer->analyze($class, ClassDef::class)->properties;
+        foreach ($props as $p) {
+            // Because objects are passed by handle, it is possible that
+            // this isn't the first time we've retrieved these fields.
+            // That means the enhancements may already have been done.
+            // @todo This could be fatal, because who else might be using
+            // these cached attributes?  Ah crap.
+            $p->analyzer ??= $this->analyzer;
+        }
+        return $props;
+    }
+
+    public function listType(mixed $value): string
+    {
+        // If there is a type specified, use that.
+        $type = $this?->typeField?->arrayType;
+
+        // If there is no type at all, just get the type of the data itself.
+        if (!$type) {
+            return \get_debug_type($value);
+        }
+
+        // Check if the target type has a type map.  If so, use that instead.
+        $classDef = $this->analyzer->analyze($type, ClassDef::class);
+        return $classDef->typeMap?->findClass($value[$classDef->typeMap->keyField()]) ?? $type;
+    }
+
+    protected function getTargetClass(array $dict): ?string
+    {
+        $map = $this->typeMap();
+
+        if (!$map) {
+            return $this->phpType;
+        }
+
+        if (! $key = ($dict[$map->keyField()] ?? null)) {
+            return null;
+        }
+
+        if (!$class = $map->findClass($key)) {
+            return null;
+        }
+
+        return $class;
+    }
+
+    public function typeMap(): ?TypeMap
+    {
         // @todo Injected type maps go here.
 
         return $this?->typeMap;

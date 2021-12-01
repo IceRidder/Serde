@@ -48,12 +48,7 @@ trait ArrayBasedDeformatter
             return SerdeError::Missing;
         }
 
-        $class = $field?->typeField?->arrayType ?? '';
-        if (class_exists($class) || interface_exists($class)) {
-            return $this->upcastArray($decoded[$field->serializedName], $recursor, $class);
-        }
-
-        return $this->upcastArray($decoded[$field->serializedName], $recursor);
+        return $this->upcastArray($decoded[$field->serializedName], $recursor, $field);
     }
 
     public function deserializeDictionary(mixed $decoded, Field $field, callable $recursor): array|SerdeError
@@ -66,25 +61,16 @@ trait ArrayBasedDeformatter
             return SerdeError::FormatError;
         }
 
-        $class = $field?->typeField?->arrayType ?? '';
-        if (class_exists($class) || interface_exists($class)) {
-            return $this->upcastArray($decoded[$field->serializedName], $recursor, $class);
-        }
-
-        return $this->upcastArray($decoded[$field->serializedName], $recursor);
+        return $this->upcastArray($decoded[$field->serializedName], $recursor, $field);
     }
 
     /**
      * Deserializes all elements of an array, through the recursor.
      */
-    protected function upcastArray(array $data, callable $recursor, ?string $type = null): array
+    protected function upcastArray(array $data, callable $recursor, Field $field): array
     {
-        /** @var ClassDef $classDef */
-        $classDef = $type ? $this->getAnalyzer()->analyze($type, ClassDef::class) : null;
-
-        $upcast = function(array $ret, mixed $v, int|string $k) use ($recursor, $type, $data, $classDef) {
-            $arrayType = $classDef?->typeMap?->findClass($v[$classDef->typeMap->keyField()]) ?? $type ?? get_debug_type($v);
-            $f = Field::create(serializedName: "$k", phpType: $arrayType);
+        $upcast = function (array $ret, mixed $v, int|string $k) use ($recursor, $data, $field) {
+            $f = $field->forType(serializedName: "$k", phpType: $field->listType($v));
             $ret[$k] = $recursor($data, $f);
             return $ret;
         };
@@ -122,8 +108,7 @@ trait ArrayBasedDeformatter
 
         $ret = [];
 
-        /** @var Field $propField */
-        foreach ($this->propertyList($field, $typeMap, $data) as $propField) {
+        foreach ($field->properties($data) as $propField) {
             $usedNames[] = $propField->serializedName;
             if ($propField->flatten && $propField->typeCategory === TypeCategory::Array) {
                 $collectingArray = $propField;
@@ -143,7 +128,7 @@ trait ArrayBasedDeformatter
         $remaining = $this->getRemainingData($data, $usedNames);
         foreach ($collectingObjects as $collectingField) {
             $remaining = $this->getRemainingData($remaining, $usedNames);
-            $nestedProps = $this->propertyList($collectingField, $collectingField?->typeMap, $remaining);
+            $nestedProps = $collectingField->properties($remaining);
             foreach ($nestedProps as $propField) {
                 $ret[$propField->serializedName] = ($propField->typeCategory->isEnum() || $propField->typeCategory->isCompound())
                     ? $recursor($data, $propField)
@@ -158,8 +143,7 @@ trait ArrayBasedDeformatter
         $remaining = $this->getRemainingData($remaining, $usedNames);
         if ($collectingArray?->typeMap) {
             foreach ($remaining as $k => $v) {
-                $class = $collectingArray->typeMap->findClass($v[$collectingArray->typeMap->keyField()]);
-                $ret[$k] = $recursor($remaining, Field::create(serializedName: "$k", phpType: $class));
+                $ret[$k] = $recursor($remaining, $collectingArray->forArrayType(serializedName: "$k", dict: $v));
             }
         } else {
             // Otherwise, just tack on whatever is left to the processed data.
@@ -180,7 +164,7 @@ trait ArrayBasedDeformatter
      */
     protected function propertyList(Field $field, ?TypeMap $map, array $data): array
     {
-        $class = $this->getTargetClass($field, $map, $data);
+        $class = $field->getTargetClass($data);
 
         return $class ?
             $this->getAnalyzer()->analyze($class, ClassDef::class)->properties

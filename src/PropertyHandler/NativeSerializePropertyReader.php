@@ -30,13 +30,13 @@ class NativeSerializePropertyReader implements PropertyReader, PropertyWriter
 
         foreach ($propValues as $k => $v) {
             $dict->items[] = new CollectionItem(
-                field: Field::create(serializedName: "$k", phpType: \get_debug_type($v)),
+                field: $field->forType(serializedName: "$k", phpType: \get_debug_type($v)),
                 value: $v,
             );
         }
 
         if ($map = $this->typeMap($field)) {
-            $f = Field::create(serializedName: $map->keyField(), phpType: 'string');
+            $f = $field->forType(serializedName: $map->keyField(), phpType: 'string');
             // The type map field MUST come first so that streaming deformatters
             // can know their context.
             $dict->items = [new CollectionItem(field: $f, value: $map->findIdentifier($value::class)), ...$dict->items];
