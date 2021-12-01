@@ -10,11 +10,15 @@ use Crell\Serde\DictionaryField;
 use Crell\Serde\Field;
 use Crell\Serde\Formatter\Deformatter;
 use Crell\Serde\Formatter\Formatter;
+use Crell\Serde\PropertyHandler\ReclosingPropertyReader;
 use Crell\Serde\SequenceField;
 use Crell\Serde\SerdeError;
 
 class DictionaryPropertyReader implements PropertyReader, PropertyWriter
 {
+    use ReclosingPropertyReader;
+    use ReclosingPropertyWriter;
+
     public function readValue(Formatter $formatter, callable $recursor, Field $field, mixed $value, mixed $runningValue): mixed
     {
         /** @var ?DictionaryField $typeField */

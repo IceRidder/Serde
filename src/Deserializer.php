@@ -22,28 +22,33 @@ class Deserializer
      */
     protected readonly \Closure $recursor;
 
+    /** @var PropertyWriter[]  */
+    protected readonly array $writers;
+
     public function __construct(
         protected readonly ClassAnalyzer $analyzer,
-        /** @var PropertyReader[]  */
-        protected readonly array $readers,
         /** @var PropertyWriter[] */
-        protected readonly array $writers,
-        protected readonly Deformatter $formatter,
+        array $writers,
+        protected readonly Deformatter $deformatter,
     ) {
+        $writerReclose = fn(PropertyWriter $r) => $r->writeReclose($this->analyzer, $this->deformatter);
+
+        $this->writers = array_map($writerReclose, $writers);
+
         $this->recursor = $this->deserialize(...);
     }
 
     public function deserialize(mixed $decoded, Field $field): mixed
     {
         $writer = $this->findWriter($field);
-        $result = $writer->writeValue($this->formatter, $this->recursor, $field, $decoded);
+        $result = $writer->writeValue($this->deformatter, $this->recursor, $field, $decoded);
 
         return $result;
     }
 
     protected function findWriter(Field $field): PropertyWriter
     {
-        $format = $this->formatter->format();
+        $format = $this->deformatter->format();
         foreach ($this->writers as $w) {
             if ($w->canWrite($field, $format)) {
                 return $w;

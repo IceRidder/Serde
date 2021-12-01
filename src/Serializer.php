@@ -8,6 +8,8 @@ use Crell\AttributeUtils\ClassAnalyzer;
 use Crell\Serde\Formatter\Formatter;
 use Crell\Serde\PropertyHandler\PropertyReader;
 use Crell\Serde\PropertyHandler\PropertyWriter;
+use function Crell\fp\amap;
+use function Crell\fp\pipe;
 
 // This exists mainly just to create a closure over the formatter.
 // But that does simplify a number of functions.
@@ -27,14 +29,23 @@ class Serializer
      */
     protected readonly \Closure $recursor;
 
+    /** @var PropertyReader[] */
+    protected readonly array $readers;
+
+    /** @var PropertyWriter[] */
+    protected readonly array $writers;
+
     public function __construct(
         protected readonly ClassAnalyzer $analyzer,
         /** @var PropertyReader[]  */
-        protected readonly array $readers,
+        array $readers,
         /** @var PropertyWriter[] */
-        protected readonly array $writers,
         protected readonly Formatter $formatter,
     ) {
+        $readerReclose = fn(PropertyReader $r) => $r->readReclose($this->analyzer, $this->formatter);
+
+        $this->readers = array_map($readerReclose, $readers);
+
         $this->recursor = $this->serialize(...);
     }
 

@@ -12,6 +12,9 @@ use Crell\Serde\TypeCategory;
 
 class EnumPropertyReader implements PropertyReader, PropertyWriter
 {
+    use ReclosingPropertyReader;
+    use ReclosingPropertyWriter;
+
     public function readValue(Formatter $formatter, callable $recursor, Field $field, mixed $value, mixed $runningValue): mixed
     {
         $scalar = $value->value ?? $value->name;

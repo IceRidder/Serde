@@ -15,6 +15,9 @@ use Crell\Serde\SerdeError;
 
 class SequencePropertyReader implements PropertyReader, PropertyWriter
 {
+    use ReclosingPropertyReader;
+    use ReclosingPropertyWriter;
+
     public function readValue(Formatter $formatter, callable $recursor, Field $field, mixed $value, mixed $runningValue): mixed
     {
         /** @var ?SequenceField $typeField */

@@ -18,7 +18,6 @@ class MappedObjectPropertyReader extends ObjectPropertyReader
     public function __construct(
         protected readonly array $supportedTypes,
         protected readonly TypeMap $typeMap,
-        protected readonly ClassAnalyzer $analyzer = new MemoryCacheAnalyzer(new Analyzer()),
     ) {}
 
     protected function typeMap(Field $field): ?TypeMap

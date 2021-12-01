@@ -7,10 +7,14 @@ namespace Crell\Serde\PropertyHandler;
 use Crell\Serde\Field;
 use Crell\Serde\Formatter\Deformatter;
 use Crell\Serde\Formatter\Formatter;
+use Crell\Serde\PropertyHandler\ReclosingPropertyReader;
 use Crell\Serde\SerdeError;
 
 class DateTimeZonePropertyReader implements PropertyReader, PropertyWriter
 {
+    use ReclosingPropertyReader;
+    use ReclosingPropertyWriter;
+
     /**
      * @param Formatter $formatter
      * @param callable $recursor

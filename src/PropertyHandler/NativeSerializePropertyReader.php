@@ -18,9 +18,8 @@ use Crell\Serde\TypeMap;
 
 class NativeSerializePropertyReader implements PropertyReader, PropertyWriter
 {
-    public function __construct(
-        protected readonly ClassAnalyzer $analyzer = new MemoryCacheAnalyzer(new Analyzer()),
-    ) {}
+    use ReclosingPropertyReader;
+    use ReclosingPropertyWriter;
 
     public function readValue(Formatter $formatter, callable $recursor, Field $field, mixed $value, mixed $runningValue): mixed
     {

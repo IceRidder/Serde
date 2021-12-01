@@ -11,6 +11,9 @@ use Crell\Serde\TypeCategory;
 
 class ScalarPropertyReader implements PropertyReader, PropertyWriter
 {
+    use ReclosingPropertyReader;
+    use ReclosingPropertyWriter;
+
     public function readValue(Formatter $formatter, callable $recursor, Field $field, mixed $value, mixed $runningValue): mixed
     {
         return match ($field->phpType) {

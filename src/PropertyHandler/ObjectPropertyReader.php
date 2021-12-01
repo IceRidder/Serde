@@ -24,12 +24,11 @@ use function Crell\fp\reduceWithKeys;
 
 class ObjectPropertyReader implements PropertyWriter, PropertyReader
 {
+    use ReclosingPropertyReader;
+    use ReclosingPropertyWriter;
+
     protected readonly \Closure $populator;
     protected readonly \Closure $methodCaller;
-
-    public function __construct(
-        protected readonly ClassAnalyzer $analyzer = new MemoryCacheAnalyzer(new Analyzer()),
-    ) {}
 
     /**
      * @param Formatter $formatter
