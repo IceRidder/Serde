@@ -258,24 +258,7 @@ class Field implements FromReflectionProperty, HasSubAttributes, Excludable
 
     public function propertiesForValue(object $value): iterable
     {
-        if ($this->typeCategory !== TypeCategory::Object) {
-            // @todo Better exception
-            throw new \RuntimeException('Cannot get properties on non-object');
-        }
-
-        $class = $value::class;
-
-        $props = $this->analyzer->analyze($class, ClassDef::class)->properties;
-        foreach ($props as $p) {
-            // Because objects are passed by handle, it is possible that
-            // this isn't the first time we've retrieved these fields.
-            // That means the enhancements may already have been done.
-            // @todo This could be fatal, because who else might be using
-            // these cached attributes?  Ah crap.
-            $p->analyzer ??= $this->analyzer;
-            $p->typeMaps ??= $this->typeMaps;
-        }
-        return $props;
+        return $this->propertiesForClass($value::class);
     }
 
     /**
@@ -283,17 +266,22 @@ class Field implements FromReflectionProperty, HasSubAttributes, Excludable
      */
     public function properties(?array $dict = null): iterable
     {
-        if ($this->typeCategory !== TypeCategory::Object) {
-            // @todo Better exception
-            throw new \RuntimeException('Cannot get properties on non-object');
-        }
-
         $class = $dict
             ? $this->getTargetClass($dict)
             : $this->phpType;
 
         if (!$class) {
             return [];
+        }
+
+        return $this->propertiesForClass($class);
+    }
+
+    protected function propertiesForClass(string $class): iterable
+    {
+        if ($this->typeCategory !== TypeCategory::Object) {
+            // @todo Better exception
+            throw new \RuntimeException('Cannot get properties on non-object');
         }
 
         $props = $this->analyzer->analyze($class, ClassDef::class)->properties;
