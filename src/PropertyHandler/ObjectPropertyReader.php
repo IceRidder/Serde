@@ -31,14 +31,13 @@ class ObjectPropertyReader implements PropertyWriter, PropertyReader
     protected readonly \Closure $methodCaller;
 
     /**
-     * @param Formatter $formatter
      * @param callable $recursor
      * @param Field $field
      * @param object $value
      * @param mixed $runningValue
      * @return mixed
      */
-    public function readValue(Formatter $formatter, callable $recursor, Field $field, mixed $value, mixed $runningValue): mixed
+    public function readValue(callable $recursor, Field $field, mixed $value, mixed $runningValue): mixed
     {
         // This lets us read private values without messing with the Reflection API.
         $propReader = (fn (string $prop): mixed => $this->$prop ?? null)->bindTo($value, $value);
@@ -135,7 +134,7 @@ class ObjectPropertyReader implements PropertyWriter, PropertyReader
         return $field->typeCategory === TypeCategory::Object;
     }
 
-    public function writeValue(Deformatter $formatter, callable $recursor, Field $field, mixed $source): mixed
+    public function writeValue(callable $recursor, Field $field, mixed $source): mixed
     {
         // Get the raw data as an array from the source.
         $dict = $this->deformatter->deserializeObject($source, $field, $recursor, $this->typeMap($field));

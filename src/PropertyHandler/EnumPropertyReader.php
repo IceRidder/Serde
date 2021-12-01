@@ -15,7 +15,7 @@ class EnumPropertyReader implements PropertyReader, PropertyWriter
     use ReclosingPropertyReader;
     use ReclosingPropertyWriter;
 
-    public function readValue(Formatter $formatter, callable $recursor, Field $field, mixed $value, mixed $runningValue): mixed
+    public function readValue(callable $recursor, Field $field, mixed $value, mixed $runningValue): mixed
     {
         $scalar = $value->value ?? $value->name;
 
@@ -30,7 +30,7 @@ class EnumPropertyReader implements PropertyReader, PropertyWriter
         return $field->typeCategory->isEnum();
     }
 
-    public function writeValue(Deformatter $formatter, callable $recursor, Field $field, mixed $source): mixed
+    public function writeValue(callable $recursor, Field $field, mixed $source): mixed
     {
         // It's kind of amusing that both of these work, but they work.
         $val = match ($field->typeCategory) {

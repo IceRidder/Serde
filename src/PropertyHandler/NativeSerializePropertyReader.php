@@ -21,7 +21,7 @@ class NativeSerializePropertyReader implements PropertyReader, PropertyWriter
     use ReclosingPropertyReader;
     use ReclosingPropertyWriter;
 
-    public function readValue(Formatter $formatter, callable $recursor, Field $field, mixed $value, mixed $runningValue): mixed
+    public function readValue(callable $recursor, Field $field, mixed $value, mixed $runningValue): mixed
     {
         $propValues = $value->__serialize();
 
@@ -54,7 +54,7 @@ class NativeSerializePropertyReader implements PropertyReader, PropertyWriter
         return $field->typeCategory === TypeCategory::Object && method_exists($value, '__serialize');
     }
 
-    public function writeValue(Deformatter $formatter, callable $recursor, Field $field, mixed $source): mixed
+    public function writeValue(callable $recursor, Field $field, mixed $source): mixed
     {
         // The data may not have any relation at all to the original object's
         // properties.  So deserialize as a basic dictionary instead.

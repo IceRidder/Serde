@@ -10,7 +10,7 @@ use Crell\Serde\Formatter\Deformatter;
 
 interface PropertyWriter
 {
-    public function writeValue(Deformatter $formatter, callable $recursor, Field $field, mixed $source): mixed;
+    public function writeValue(callable $recursor, Field $field, mixed $source): mixed;
 
     public function canWrite(Field $field, string $format): bool;
 

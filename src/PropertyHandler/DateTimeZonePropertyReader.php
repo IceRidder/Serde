@@ -16,14 +16,13 @@ class DateTimeZonePropertyReader implements PropertyReader, PropertyWriter
     use ReclosingPropertyWriter;
 
     /**
-     * @param Formatter $formatter
      * @param callable $recursor
      * @param Field $field
      * @param \DateTimeZone $value
      * @param mixed $runningValue
      * @return mixed
      */
-    public function readValue(Formatter $formatter, callable $recursor, Field $field, mixed $value, mixed $runningValue): mixed
+    public function readValue(callable $recursor, Field $field, mixed $value, mixed $runningValue): mixed
     {
         $string = $value->getName();
         return $this->formatter->serializeString($runningValue, $field, $string);
@@ -34,7 +33,7 @@ class DateTimeZonePropertyReader implements PropertyReader, PropertyWriter
         return $field->phpType === \DateTimeZone::class;
     }
 
-    public function writeValue(Deformatter $formatter, callable $recursor, Field $field, mixed $source): mixed
+    public function writeValue(callable $recursor, Field $field, mixed $source): mixed
     {
         $string = $this->deformatter->deserializeString($source, $field);
 

@@ -61,7 +61,7 @@ class Serializer
         }
 
         $reader = $this->findReader($field, $value);
-        $result = $reader->readValue($this->formatter, $this->recursor, $field, $value, $runningValue);
+        $result = $reader->readValue($this->recursor, $field, $value, $runningValue);
 
         if (is_object($value)) {
             array_pop($this->seenObjects);

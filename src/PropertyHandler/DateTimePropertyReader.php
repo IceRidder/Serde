@@ -16,14 +16,13 @@ class DateTimePropertyReader implements PropertyReader, PropertyWriter
     use ReclosingPropertyWriter;
 
     /**
-     * @param Formatter $formatter
      * @param callable $recursor
      * @param Field $field
      * @param \DateTimeInterface $value
      * @param mixed $runningValue
      * @return mixed
      */
-    public function readValue(Formatter $formatter, callable $recursor, Field $field, mixed $value, mixed $runningValue): mixed
+    public function readValue(callable $recursor, Field $field, mixed $value, mixed $runningValue): mixed
     {
         $string = $value->format(\DateTimeInterface::RFC3339_EXTENDED);
         return $this->formatter->serializeString($runningValue, $field, $string);
@@ -34,7 +33,7 @@ class DateTimePropertyReader implements PropertyReader, PropertyWriter
         return $value instanceof \DateTimeInterface;
     }
 
-    public function writeValue(Deformatter $formatter, callable $recursor, Field $field, mixed $source): mixed
+    public function writeValue(callable $recursor, Field $field, mixed $source): mixed
     {
         $string = $this->deformatter->deserializeString($source, $field);
 
