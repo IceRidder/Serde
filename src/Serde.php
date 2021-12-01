@@ -20,7 +20,7 @@ use Crell\Serde\PropertyHandler\PropertyWriter;
  *
  * For most typical cases, you can use SerdeCommon and be happy.
  *
- * Note: You MUST repeat the for readonly properties in the subclass,
+ * Note: You MUST repeat the four readonly properties in the subclass,
  * exactly as defined here, or they will not be settable from the
  * subclass constructor.  This is a PHP limitation.
  */
