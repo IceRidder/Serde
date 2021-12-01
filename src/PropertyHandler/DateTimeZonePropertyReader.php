@@ -26,7 +26,7 @@ class DateTimeZonePropertyReader implements PropertyReader, PropertyWriter
     public function readValue(Formatter $formatter, callable $recursor, Field $field, mixed $value, mixed $runningValue): mixed
     {
         $string = $value->getName();
-        return $formatter->serializeString($runningValue, $field, $string);
+        return $this->formatter->serializeString($runningValue, $field, $string);
     }
 
     public function canRead(Field $field, mixed $value, string $format): bool
@@ -36,7 +36,7 @@ class DateTimeZonePropertyReader implements PropertyReader, PropertyWriter
 
     public function writeValue(Deformatter $formatter, callable $recursor, Field $field, mixed $source): mixed
     {
-        $string = $formatter->deserializeString($source, $field);
+        $string = $this->deformatter->deserializeString($source, $field);
 
         if ($string === SerdeError::Missing) {
             return null;

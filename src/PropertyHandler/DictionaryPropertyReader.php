@@ -24,7 +24,7 @@ class DictionaryPropertyReader implements PropertyReader, PropertyWriter
         /** @var ?DictionaryField $typeField */
         $typeField = $field?->typeField;
         if ($typeField?->shouldImplode()) {
-            return $formatter->serializeString($runningValue, $field, $typeField->implode($value));
+            return $this->formatter->serializeString($runningValue, $field, $typeField->implode($value));
         }
 
         $dict = new Dict();
@@ -33,7 +33,7 @@ class DictionaryPropertyReader implements PropertyReader, PropertyWriter
             $dict->items[] = new CollectionItem(field: $f, value: $v);
         }
 
-        return $formatter->serializeDictionary($runningValue, $field, $dict, $recursor);
+        return $this->formatter->serializeDictionary($runningValue, $field, $dict, $recursor);
     }
 
     public function canRead(Field $field, mixed $value, string $format): bool
@@ -48,13 +48,13 @@ class DictionaryPropertyReader implements PropertyReader, PropertyWriter
         // The extra type check is necessary because it might be a SequenceField.
         // We cannot easily tell them apart at the moment.
         if ($typeField instanceof DictionaryField && $typeField?->implodeOn) {
-            $val = $formatter->deserializeString($source, $field);
+            $val = $this->deformatter->deserializeString($source, $field);
             return $val === SerdeError::Missing
                 ? null
                 : $typeField->explode($val);
         }
 
-        return $formatter->deserializeDictionary($source, $field, $recursor);
+        return $this->deformatter->deserializeDictionary($source, $field, $recursor);
     }
 
     public function canWrite(Field $field, string $format): bool

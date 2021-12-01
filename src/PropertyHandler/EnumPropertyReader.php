@@ -20,8 +20,8 @@ class EnumPropertyReader implements PropertyReader, PropertyWriter
         $scalar = $value->value ?? $value->name;
 
         return match (true) {
-            is_int($scalar) => $formatter->serializeInt($runningValue, $field, $scalar),
-            is_string($scalar) => $formatter->serializeString($runningValue, $field, $scalar),
+            is_int($scalar) => $this->formatter->serializeInt($runningValue, $field, $scalar),
+            is_string($scalar) => $this->formatter->serializeString($runningValue, $field, $scalar),
         };
     }
 
@@ -34,9 +34,9 @@ class EnumPropertyReader implements PropertyReader, PropertyWriter
     {
         // It's kind of amusing that both of these work, but they work.
         $val = match ($field->typeCategory) {
-            TypeCategory::UnitEnum => $formatter->deserializeString($source, $field),
-            TypeCategory::IntEnum => $formatter->deserializeInt($source, $field),
-            TypeCategory::StringEnum => $formatter->deserializeString($source, $field),
+            TypeCategory::UnitEnum => $this->deformatter->deserializeString($source, $field),
+            TypeCategory::IntEnum => $this->deformatter->deserializeInt($source, $field),
+            TypeCategory::StringEnum => $this->deformatter->deserializeString($source, $field),
         };
 
         if ($val === SerdeError::Missing) {

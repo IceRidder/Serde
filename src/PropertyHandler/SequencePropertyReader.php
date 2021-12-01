@@ -23,7 +23,7 @@ class SequencePropertyReader implements PropertyReader, PropertyWriter
         /** @var ?SequenceField $typeField */
         $typeField = $field?->typeField;
         if ($typeField?->shouldImplode()) {
-            return $formatter->serializeString($runningValue, $field, $typeField->implode($value));
+            return $this->formatter->serializeString($runningValue, $field, $typeField->implode($value));
         }
 
         $seq = new Sequence();
@@ -32,7 +32,7 @@ class SequencePropertyReader implements PropertyReader, PropertyWriter
             $seq->items[] = new CollectionItem(field: $f, value: $v);
         }
 
-        return $formatter->serializeSequence($runningValue, $field, $seq, $recursor);
+        return $this->formatter->serializeSequence($runningValue, $field, $seq, $recursor);
     }
 
     public function canRead(Field $field, mixed $value, string $format): bool
@@ -47,13 +47,13 @@ class SequencePropertyReader implements PropertyReader, PropertyWriter
         // The extra type check is necessary because it might be a DictionaryField.
         // We cannot easily tell them apart at the moment.
         if ($typeField instanceof SequenceField && $typeField?->implodeOn) {
-            $val = $formatter->deserializeString($source, $field);
+            $val = $this->deformatter->deserializeString($source, $field);
             return $val === SerdeError::Missing
                 ? null
                 : $typeField->explode($val);
         }
 
-        return $formatter->deserializeSequence($source, $field, $recursor);
+        return $this->deformatter->deserializeSequence($source, $field, $recursor);
     }
 
     public function canWrite(Field $field, string $format): bool

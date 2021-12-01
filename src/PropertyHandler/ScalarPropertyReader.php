@@ -17,20 +17,20 @@ class ScalarPropertyReader implements PropertyReader, PropertyWriter
     public function readValue(Formatter $formatter, callable $recursor, Field $field, mixed $value, mixed $runningValue): mixed
     {
         return match ($field->phpType) {
-            'int' => $formatter->serializeInt($runningValue, $field, $value),
-            'float' => $formatter->serializeFloat($runningValue, $field, $value),
-            'bool' => $formatter->serializeBool($runningValue, $field, $value),
-            'string' => $formatter->serializeString($runningValue, $field, $value),
+            'int' => $this->formatter->serializeInt($runningValue, $field, $value),
+            'float' => $this->formatter->serializeFloat($runningValue, $field, $value),
+            'bool' => $this->formatter->serializeBool($runningValue, $field, $value),
+            'string' => $this->formatter->serializeString($runningValue, $field, $value),
         };
     }
 
     public function writeValue(Deformatter $formatter, callable $recursor, Field $field, mixed $source): mixed
     {
         return match ($field->phpType) {
-            'int' => $formatter->deserializeInt($source, $field),
-            'float' => $formatter->deserializeFloat($source, $field),
-            'bool' => $formatter->deserializeBool($source, $field),
-            'string' => $formatter->deserializeString($source, $field),
+            'int' => $this->deformatter->deserializeInt($source, $field),
+            'float' => $this->deformatter->deserializeFloat($source, $field),
+            'bool' => $this->deformatter->deserializeBool($source, $field),
+            'string' => $this->deformatter->deserializeString($source, $field),
         };
     }
 

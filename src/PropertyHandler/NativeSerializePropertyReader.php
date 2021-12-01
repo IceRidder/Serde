@@ -41,7 +41,7 @@ class NativeSerializePropertyReader implements PropertyReader, PropertyWriter
             $dict->items = [new CollectionItem(field: $f, value: $map->findIdentifier($value::class)), ...$dict->items];
         }
 
-        return $formatter->serializeDictionary($runningValue, $field, $dict, $recursor);
+        return $this->formatter->serializeDictionary($runningValue, $field, $dict, $recursor);
     }
 
     protected function typeMap(Field $field): ?TypeMap
@@ -58,7 +58,7 @@ class NativeSerializePropertyReader implements PropertyReader, PropertyWriter
     {
         // The data may not have any relation at all to the original object's
         // properties.  So deserialize as a basic dictionary instead.
-        $dict = $formatter->deserializeDictionary($source, $field, $recursor);
+        $dict = $this->deformatter->deserializeDictionary($source, $field, $recursor);
 
         if ($dict === SerdeError::Missing) {
             return null;
