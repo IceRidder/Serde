@@ -25,12 +25,16 @@ class Deserializer
     /** @var PropertyWriter[]  */
     protected readonly array $writers;
 
+    protected readonly Deformatter $deformatter;
+
     public function __construct(
         protected readonly ClassAnalyzer $analyzer,
         /** @var PropertyWriter[] */
         array $writers,
-        protected readonly Deformatter $deformatter,
+        Deformatter $deformatter,
     ) {
+        $this->deformatter = $deformatter->deformatterReclose($this->analyzer);
+
         $writerReclose = fn(PropertyWriter $r) => $r->writeReclose($this->analyzer, $this->deformatter);
 
         $this->writers = array_map($writerReclose, $writers);

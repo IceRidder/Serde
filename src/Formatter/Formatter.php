@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Crell\Serde\Formatter;
 
+use Crell\AttributeUtils\ClassAnalyzer;
 use Crell\Serde\Dict;
 use Crell\Serde\Field;
 use Crell\Serde\Sequence;
@@ -32,4 +33,6 @@ interface Formatter
     public function serializeDictionary(mixed $runningValue, Field $field, Dict $next, callable $recursor): mixed;
 
     public function serializeObject(mixed $runningValue, Field $field, Dict $next, callable $recursor): mixed;
+
+    public function formatterReclose(ClassAnalyzer $analyzer): static;
 }

@@ -32,16 +32,16 @@ class Serializer
     /** @var PropertyReader[] */
     protected readonly array $readers;
 
-    /** @var PropertyWriter[] */
-    protected readonly array $writers;
+    protected readonly Formatter $formatter;
 
     public function __construct(
         protected readonly ClassAnalyzer $analyzer,
         /** @var PropertyReader[]  */
         array $readers,
-        /** @var PropertyWriter[] */
-        protected readonly Formatter $formatter,
+        Formatter $formatter,
     ) {
+        $this->formatter = $formatter->formatterReclose($this->analyzer);
+
         $readerReclose = fn(PropertyReader $r) => $r->readReclose($this->analyzer, $this->formatter);
 
         $this->readers = array_map($readerReclose, $readers);

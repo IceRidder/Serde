@@ -19,13 +19,15 @@ use Crell\Serde\Sequence;
  */
 trait ArrayBasedFormatter
 {
+    use ReclosingFormatter;
+
     public function initialField(string $type): Field
     {
         // @todo This feels very ugly and hard coded to me. I'm not sure of a better fix.
         // But we need to get a type map onto the root field in order to support
         // deserializing into a mapped root object.
         /** @var ClassDef $classDef */
-        $classDef = $this->getAnalyzer()->analyze($type, ClassDef::class);
+        $classDef = $this->analyzer->analyze($type, ClassDef::class);
         $field = Field::create('root', $type);
         if ($classDef?->typeMap) {
             $field = $field->with(typeMap: $classDef->typeMap);

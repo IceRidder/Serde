@@ -22,6 +22,8 @@ use function Crell\fp\reduceWithKeys;
  */
 trait ArrayBasedDeformatter
 {
+    use ReclosingDeformatter;
+
     public function deserializeInt(mixed $decoded, Field $field): int|SerdeError
     {
         return $decoded[$field->serializedName] ?? SerdeError::Missing;
@@ -80,7 +82,7 @@ trait ArrayBasedDeformatter
     protected function upcastArray(array $data, callable $recursor, ?string $type = null): array
     {
         /** @var ClassDef $classDef */
-        $classDef = $type ? $this->getAnalyzer()->analyze($type, ClassDef::class) : null;
+        $classDef = $type ? $this->analyzer->analyze($type, ClassDef::class) : null;
 
         $upcast = function(array $ret, mixed $v, int|string $k) use ($recursor, $type, $data, $classDef) {
             $arrayType = $classDef?->typeMap?->findClass($v[$classDef->typeMap->keyField()]) ?? $type ?? get_debug_type($v);
@@ -183,7 +185,7 @@ trait ArrayBasedDeformatter
         $class = $this->getTargetClass($field, $map, $data);
 
         return $class ?
-            $this->getAnalyzer()->analyze($class, ClassDef::class)->properties
+            $this->analyzer->analyze($class, ClassDef::class)->properties
             : [];
     }
 
@@ -208,13 +210,4 @@ trait ArrayBasedDeformatter
     {
         return array_diff_key($source, array_flip($used));
     }
-
-    /**
-     * Returns a class analyzer.
-     *
-     * Classes using this trait must provide a class analyzer via this method.
-     *
-     * @return ClassAnalyzer
-     */
-    abstract protected function getAnalyzer(): ClassAnalyzer;
 }

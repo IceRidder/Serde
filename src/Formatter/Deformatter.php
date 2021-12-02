@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Crell\Serde\Formatter;
 
+use Crell\AttributeUtils\ClassAnalyzer;
 use Crell\Serde\Field;
 use Crell\Serde\SerdeError;
 use Crell\Serde\TypeMap;
@@ -31,4 +32,6 @@ interface Deformatter
     public function deserializeObject( mixed $decoded, Field $field, callable $recursor, ?TypeMap $typeMap): array|SerdeError;
 
     public function deserializeFinalize(mixed $decoded): void;
+
+    public function deformatterReclose(ClassAnalyzer $analyzer): static;
 }
