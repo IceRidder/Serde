@@ -10,12 +10,7 @@ use Crell\Serde\Formatter\Formatter;
 
 interface PropertyReader
 {
-    public function readValue(
-        callable $recursor,
-        Field $field,
-        mixed $value,
-        mixed $runningValue
-    ): mixed;
+    public function readValue(Field $field, mixed $value, mixed $runningValue): mixed;
 
     public function canRead(Field $field, mixed $value, string $format): bool;
 

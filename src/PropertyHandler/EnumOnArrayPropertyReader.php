@@ -9,12 +9,12 @@ use Crell\Serde\Formatter\Deformatter;
 
 class EnumOnArrayPropertyReader extends EnumPropertyReader
 {
-    public function writeValue(callable $recursor, Field $field, mixed $source): mixed
+    public function writeValue(Field $field, mixed $source): mixed
     {
         if ($source[$field->serializedName] ?? null instanceof \UnitEnum) {
             return $source[$field->serializedName];
         }
-        return parent::writeValue($recursor, $field, $source);
+        return parent::writeValue($field, $source);
     }
 
     public function canWrite(Field $field, string $format): bool

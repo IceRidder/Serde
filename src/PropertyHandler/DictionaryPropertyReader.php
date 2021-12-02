@@ -19,7 +19,7 @@ class DictionaryPropertyReader implements PropertyReader, PropertyWriter
     use ReclosingPropertyReader;
     use ReclosingPropertyWriter;
 
-    public function readValue(callable $recursor, Field $field, mixed $value, mixed $runningValue): mixed
+    public function readValue(Field $field, mixed $value, mixed $runningValue): mixed
     {
         /** @var ?DictionaryField $typeField */
         $typeField = $field?->typeField;
@@ -41,7 +41,7 @@ class DictionaryPropertyReader implements PropertyReader, PropertyWriter
         return $field->phpType === 'array' && !\array_is_list($value);
     }
 
-    public function writeValue(callable $recursor, Field $field, mixed $source): mixed
+    public function writeValue(Field $field, mixed $source): mixed
     {
         /** @var ?DictionaryField $typeField */
         $typeField = $field?->typeField;

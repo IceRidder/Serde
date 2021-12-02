@@ -14,7 +14,7 @@ class ScalarPropertyReader implements PropertyReader, PropertyWriter
     use ReclosingPropertyReader;
     use ReclosingPropertyWriter;
 
-    public function readValue(callable $recursor, Field $field, mixed $value, mixed $runningValue): mixed
+    public function readValue(Field $field, mixed $value, mixed $runningValue): mixed
     {
         return match ($field->phpType) {
             'int' => $this->formatter->serializeInt($runningValue, $field, $value),
@@ -24,7 +24,7 @@ class ScalarPropertyReader implements PropertyReader, PropertyWriter
         };
     }
 
-    public function writeValue(callable $recursor, Field $field, mixed $source): mixed
+    public function writeValue(Field $field, mixed $source): mixed
     {
         return match ($field->phpType) {
             'int' => $this->deformatter->deserializeInt($source, $field),
