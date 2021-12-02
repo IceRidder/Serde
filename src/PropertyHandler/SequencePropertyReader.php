@@ -32,7 +32,7 @@ class SequencePropertyReader implements PropertyReader, PropertyWriter
             $seq->items[] = new CollectionItem(field: $f, value: $v);
         }
 
-        return $this->formatter->serializeSequence($runningValue, $field, $seq, $recursor);
+        return $this->formatter->serializeSequence($runningValue, $field, $seq);
     }
 
     public function canRead(Field $field, mixed $value, string $format): bool
@@ -53,7 +53,7 @@ class SequencePropertyReader implements PropertyReader, PropertyWriter
                 : $typeField->explode($val);
         }
 
-        return $this->deformatter->deserializeSequence($source, $field, $recursor);
+        return $this->deformatter->deserializeSequence($source, $field);
     }
 
     public function canWrite(Field $field, string $format): bool

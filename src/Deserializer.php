@@ -33,7 +33,7 @@ class Deserializer
         array $writers,
         Deformatter $deformatter,
     ) {
-        $this->deformatter = $deformatter->deformatterReclose($this->analyzer);
+        $this->deformatter = $deformatter->deformatterReclose($this->analyzer, $this);
 
         $writerReclose = fn(PropertyWriter $r) => $r->writeReclose($this->analyzer, $this->deformatter);
 

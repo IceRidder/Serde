@@ -40,7 +40,7 @@ class Serializer
         array $readers,
         Formatter $formatter,
     ) {
-        $this->formatter = $formatter->formatterReclose($this->analyzer);
+        $this->formatter = $formatter->formatterReclose($this->analyzer, $this);
 
         $readerReclose = fn(PropertyReader $r) => $r->readReclose($this->analyzer, $this->formatter);
 

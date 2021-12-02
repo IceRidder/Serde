@@ -33,7 +33,7 @@ class DictionaryPropertyReader implements PropertyReader, PropertyWriter
             $dict->items[] = new CollectionItem(field: $f, value: $v);
         }
 
-        return $this->formatter->serializeDictionary($runningValue, $field, $dict, $recursor);
+        return $this->formatter->serializeDictionary($runningValue, $field, $dict);
     }
 
     public function canRead(Field $field, mixed $value, string $format): bool
@@ -54,7 +54,7 @@ class DictionaryPropertyReader implements PropertyReader, PropertyWriter
                 : $typeField->explode($val);
         }
 
-        return $this->deformatter->deserializeDictionary($source, $field, $recursor);
+        return $this->deformatter->deserializeDictionary($source, $field);
     }
 
     public function canWrite(Field $field, string $format): bool

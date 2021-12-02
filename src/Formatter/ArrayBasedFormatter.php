@@ -59,25 +59,25 @@ trait ArrayBasedFormatter
         return $runningValue;
     }
 
-    public function serializeSequence(mixed $runningValue, Field $field, Sequence $next, callable $recursor): array
+    public function serializeSequence(mixed $runningValue, Field $field, Sequence $next): array
     {
         $name = $field->serializedName;
         $add = [];
         /** @var CollectionItem $item */
         foreach ($next->items as $item) {
-            $add = [...$add, ...$recursor($item->value, [], $item->field)];
+            $add = [...$add, ...$this->serializer->serialize($item->value, [], $item->field)];
         }
         $runningValue[$name] = array_values($add);
         return $runningValue;
     }
 
-    public function serializeDictionary(mixed $runningValue, Field $field, Dict $next, callable $recursor): array
+    public function serializeDictionary(mixed $runningValue, Field $field, Dict $next): array
     {
         $name = $field->serializedName;
         $add = [];
         /** @var CollectionItem $item */
         foreach ($next->items as $item) {
-            $add = [...$add, ...$recursor($item->value, [], $item->field)];
+            $add = [...$add, ...$this->serializer->serialize($item->value, [], $item->field)];
         }
         $runningValue[$name] = $add;
         foreach ($field->extraProperties as $k => $v) {
@@ -86,8 +86,8 @@ trait ArrayBasedFormatter
         return $runningValue;
     }
 
-    public function serializeObject(mixed $runningValue, Field $field, Dict $next, callable $recursor): array
+    public function serializeObject(mixed $runningValue, Field $field, Dict $next): array
     {
-        return $this->serializeDictionary($runningValue, $field, $next, $recursor);
+        return $this->serializeDictionary($runningValue, $field, $next);
     }
 }

@@ -55,7 +55,7 @@ class ObjectPropertyReader implements PropertyWriter, PropertyReader
             $dict->items = [new CollectionItem(field: $f, value: $map->findIdentifier($value::class)), ...$dict->items];
         }
 
-        return $this->formatter->serializeDictionary($runningValue, $field, $dict, $recursor);
+        return $this->formatter->serializeDictionary($runningValue, $field, $dict);
     }
 
     protected function flattenValue(Dict $dict, Field $field, callable $propReader): Dict
@@ -137,7 +137,7 @@ class ObjectPropertyReader implements PropertyWriter, PropertyReader
     public function writeValue(callable $recursor, Field $field, mixed $source): mixed
     {
         // Get the raw data as an array from the source.
-        $dict = $this->deformatter->deserializeObject($source, $field, $recursor, $this->typeMap($field));
+        $dict = $this->deformatter->deserializeObject($source, $field, $this->typeMap($field));
 
         if ($dict === SerdeError::Missing) {
             return null;
